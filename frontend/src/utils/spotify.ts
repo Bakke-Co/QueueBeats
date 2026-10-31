@@ -114,40 +114,9 @@ export const getAccessToken = async (code: string) => {
       console.log('Token exchange successful via backend');
       return data;
     } catch (backendError) {
-      console.warn('Backend token exchange failed, trying direct Spotify API:', backendError);
-      
-      // If backend fails, try direct exchange with Spotify API
-      const config = await getSpotifyConfig();
-      const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
-      
-      if (!clientSecret) {
-        console.error('No client secret available for direct token exchange');
-        throw backendError;
-      }
-      
-      const params = new URLSearchParams();
-      params.append('grant_type', 'authorization_code');
-      params.append('code', code);
-      params.append('redirect_uri', config.redirect_uri);
-      
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
-          'Authorization': 'Basic ' + btoa(`${config.client_id}:${clientSecret}`)
-        },
-        body: params
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Direct Spotify API token exchange failed: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('Token exchange successful via direct Spotify API');
-      return data;
+      // The client secret lives only in the spotify-token Netlify function; there is no browser fallback.
+      console.error('Token exchange failed:', backendError);
+      throw backendError;
     }
   } catch (error) {
     console.error('Error exchanging token:', error);
@@ -331,70 +300,13 @@ export const refreshSpotifyToken = async (refreshToken: string, userId?: string)
         error: null
       };
     } catch (backendError) {
-      console.warn("Backend token refresh failed, trying direct Spotify API:", backendError);
-      
-      // If backend fails, try direct refresh with Spotify API
-      const spotifyConfig = await getSpotifyConfig();
-      const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
-      
-      if (!clientSecret) {
-        console.error("No client secret available for direct token refresh");
-        return {
-          success: false,
-          error: "Missing client credentials for token refresh",
-          data: null
-        };
-      }
-      
-      try {
-        // Setup request for Spotify token endpoint
-        const response = await fetch('https://accounts.spotify.com/api/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
-            'Authorization': `Basic ${btoa(`${spotifyConfig.client_id}:${clientSecret}`)}`
-          },
-          body: new URLSearchParams({
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken
-          })
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Direct Spotify API token refresh failed: ${response.status} - ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log("Token refresh successful via direct Spotify API");
-        
-        // Store the new tokens if we have a user ID
-        if (userId && data.access_token) {
-          await storeSpotifyTokens({
-            access_token: data.access_token,
-            refresh_token: data.refresh_token || refreshToken,
-            expires_at: Math.floor(Date.now() / 1000) + (data.expires_in || 3600)
-          });
-        }
-        
-        return {
-          success: true,
-          data: {
-            access_token: data.access_token,
-            refresh_token: data.refresh_token || refreshToken,
-            expires_at: Math.floor(Date.now() / 1000) + (data.expires_in || 3600)
-          },
-          error: null
-        };
-      } catch (directError) {
-        console.error("Direct token refresh also failed:", directError);
-        return {
-          success: false,
-          error: `Token refresh failed: ${directError instanceof Error ? directError.message : String(directError)}`,
-          data: null
-        };
-      }
+      // The client secret lives only in the spotify-token Netlify function; there is no browser fallback.
+      console.error("Token refresh failed:", backendError);
+      return {
+        success: false,
+        error: `Token refresh failed: ${backendError instanceof Error ? backendError.message : String(backendError)}`,
+        data: null
+      };
     }
   } catch (error) {
     console.error("Exception in refreshSpotifyToken:", error instanceof Error ? error.message : String(error));

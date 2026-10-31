@@ -45,6 +45,20 @@
   status = 200
   force = true
 
+# Spotify OAuth token exchange and refresh run server-side, so the
+# client secret never reaches the browser bundle
+[[redirects]]
+  from = "/apis/spotify_auth/token"
+  to = "/.netlify/functions/spotify-token"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/apis/spotify_auth/refresh"
+  to = "/.netlify/functions/spotify-token"
+  status = 200
+  force = true
+
 # Handle API routes according to our API path structure
 [[redirects]]
   from = "/routes/*"
