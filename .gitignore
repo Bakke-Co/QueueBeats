@@ -32,3 +32,9 @@ __pycache__/
 # Temporary files
 tmp/
 temp/
+
+# Secret-bearing env files: values live in Netlify env and 1Password (.env.op), never in git
+.env.fixed
+.env.netlify
+netlify/functions/.env.development
+*.temp

@@ -25,9 +25,8 @@ exports.handler = async function(event, context) {
       SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID ? 
         `${process.env.SPOTIFY_CLIENT_ID.substring(0, 5)}...${process.env.SPOTIFY_CLIENT_ID.slice(-4)}` : 
         'missing',
-      SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET ? 
-        `${process.env.SPOTIFY_CLIENT_SECRET.substring(0, 3)}...${process.env.SPOTIFY_CLIENT_SECRET.slice(-3)}` : 
-        'missing',
+      // Presence only: this endpoint is public, so no characters of the secret
+      SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET ? 'set' : 'missing',
       SUPABASE_URL: process.env.SUPABASE_URL ? 
         process.env.SUPABASE_URL.split('://')[0] + '://' + process.env.SUPABASE_URL.split('://')[1].substring(0, 10) + '...' : 
         'missing',

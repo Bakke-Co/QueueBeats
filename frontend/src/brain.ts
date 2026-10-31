@@ -82,12 +82,7 @@ const brain = {
         })
       });
       
-      if (!response.ok) {
-        console.error(`Code exchange failed: ${response.status} ${response.statusText}`);
-        throw new Error(`Failed to exchange code: ${response.statusText}`);
-      }
-      
-      return response.json();
+      return response;
     } catch (error) {
       console.error('Error exchanging code for token:', error);
       throw error;
@@ -120,12 +115,7 @@ const brain = {
         })
       });
       
-      if (!response.ok) {
-        console.error(`Token refresh failed: ${response.status} ${response.statusText}`);
-        throw new Error(`Failed to refresh token: ${response.statusText}`);
-      }
-      
-      return response.json();
+      return response;
     } catch (error) {
       console.error('Error refreshing Spotify token:', error);
       throw error;
@@ -159,12 +149,7 @@ const brain = {
         })
       });
       
-      if (!response.ok) {
-        console.error(`Token refresh failed: ${response.status} ${response.statusText}`);
-        throw new Error(`Failed to refresh token: ${response.statusText}`);
-      }
-      
-      return response.json();
+      return response;
     } catch (error) {
       console.error('Error refreshing Spotify token:', error);
       throw error;
