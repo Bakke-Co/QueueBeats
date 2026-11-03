@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ensureSpotifyTokensTable } from '../utils/setupDatabase';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
+import { getAuthUrl } from '../utils/spotify';
 
 type SetupStatus = 'loading' | 'success' | 'error' | 'not_needed';
 
@@ -9,6 +10,7 @@ export function SpotifySetup() {
   const [setupStatus, setSetupStatus] = useState<SetupStatus>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+  const [connecting, setConnecting] = useState(false);
   
   useEffect(() => {
     checkAndSetupDatabase();
@@ -45,9 +47,15 @@ export function SpotifySetup() {
     }
   };
   
-  const handleContinue = () => {
-    // Redirect to Spotify auth page or back to the previous page
-    navigate('/spotify-auth');
+  const handleContinue = async () => {
+    setConnecting(true);
+    try {
+      window.location.assign(await getAuthUrl());
+    } catch {
+      setErrorMessage('Could not start Spotify authorization. Please try again.');
+      setSetupStatus('error');
+      setConnecting(false);
+    }
   };
   
   const handleRetry = () => {
@@ -71,7 +79,7 @@ export function SpotifySetup() {
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <h3 className="text-xl font-bold text-red-700">Database Setup Error</h3>
+        <h3 className="text-xl font-bold text-red-700">Spotify Connection Check Failed</h3>
         <p className="text-center my-4 text-red-600">{errorMessage}</p>
         <div className="flex space-x-4">
           <button 
@@ -102,13 +110,14 @@ export function SpotifySetup() {
         </svg>
         <h3 className="text-xl font-bold text-green-700">Spotify Storage Available</h3>
         <p className="text-center my-4 text-green-600">
-          The Spotify integration is now ready to use!
+          Connection storage is available. Continue to authorize Spotify.
         </p>
         <button 
           onClick={handleContinue}
+          disabled={connecting}
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
         >
-          Continue to Spotify
+          {connecting ? 'Connecting...' : 'Continue to Spotify'}
         </button>
       </div>
     );

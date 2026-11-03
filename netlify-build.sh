@@ -23,40 +23,8 @@ cd frontend
 echo "Installing frontend dependencies..."
 npm install --no-progress --legacy-peer-deps
 
-# Create UI component directory
-mkdir -p src/components/ui
-
-# Create minimal placeholder components
-for component in button input label card; do
-  if [ ! -f "src/components/ui/${component}.tsx" ]; then
-    echo "Creating placeholder ${component} component"
-    
-    if [ "$component" = "card" ]; then
-      # Create card component with subcomponents
-      cat > "src/components/ui/${component}.tsx" << EOF
-import React from 'react';
-
-export const Card = ({ children, ...props }) => <div className="card" {...props}>{children}</div>;
-export const CardHeader = ({ children, ...props }) => <div className="card-header" {...props}>{children}</div>;
-export const CardContent = ({ children, ...props }) => <div className="card-content" {...props}>{children}</div>;
-export const CardFooter = ({ children, ...props }) => <div className="card-footer" {...props}>{children}</div>;
-EOF
-    else
-      # Create simple component
-      cat > "src/components/ui/${component}.tsx" << EOF
-import React from 'react';
-
-export function ${component^}(props) {
-  return <${component} {...props} className={\`${component} \${props.className || ''}\`}>{props.children}</${component}>;
-}
-EOF
-    fi
-  fi
-done
-
-# Build directly with vite without TypeScript checking
-echo "Building frontend with Vite..."
-npx vite build --emptyOutDir
+# Use checked-in UI components and the same type-checked build as CI.
+npm run build
 cd ..
 
 # Create Netlify function utilities
