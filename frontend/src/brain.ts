@@ -164,31 +164,19 @@ const brain = {
       
       if (sessionError) {
         console.error('Error fetching user session:', sessionError);
-        return {
-          ok: false,
-          status: 401,
-          statusText: 'Authentication error: ' + sessionError.message
-        };
+        return Response.json({ error: 'Authentication error: ' + sessionError.message }, { status: 401 });
       }
       
       if (!session || !session.user) {
         console.error('No active session found for token request');
-        return {
-          ok: false,
-          status: 401,
-          statusText: 'Authentication required'
-        };
+        return new Response(null, { status: 401, statusText: 'Authentication required' });
       }
       
       const userId = session.user.id;
       
       if (!userId) {
         console.error('User ID is missing from session');
-        return {
-          ok: false,
-          status: 400,
-          statusText: 'Missing user ID'
-        };
+        return new Response(null, { status: 400, statusText: 'Missing user ID' });
       }
       
       console.log('Fetching Spotify tokens for user:', userId);
@@ -226,11 +214,7 @@ const brain = {
       return response;
     } catch (error) {
       console.error('Error getting user Spotify tokens:', error);
-      return {
-        ok: false,
-        status: 500,
-        statusText: error instanceof Error ? error.message : 'Unknown error'
-      };
+      return Response.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
   },
 

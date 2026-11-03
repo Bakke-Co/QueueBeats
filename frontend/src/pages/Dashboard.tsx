@@ -20,8 +20,9 @@ export default function Dashboard() {
     <AuthInit>
       <AuthProvider>
         <ProtectedRoute>
-          <ToasterProvider />
-          <DashboardContent />
+          <ToasterProvider>
+            <DashboardContent />
+          </ToasterProvider>
         </ProtectedRoute>
       </AuthProvider>
     </AuthInit>

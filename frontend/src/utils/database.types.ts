@@ -117,6 +117,7 @@ export interface Database {
           cover_url?: string | null
           played?: boolean
           played_at?: string | null
+          position?: number | null
         }
         Update: {
           id?: string
@@ -131,6 +132,7 @@ export interface Database {
           cover_url?: string | null
           played?: boolean
           played_at?: string | null
+          position?: number | null
         }
         Relationships: [
           {
@@ -148,6 +150,12 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      spotify_tokens: {
+        Row: { id: string; user_id: string; access_token: string; refresh_token: string; expires_at: number; created_at: string; updated_at: string }
+        Insert: { id?: string; user_id: string; access_token: string; refresh_token: string; expires_at: number; created_at?: string; updated_at?: string }
+        Update: { id?: string; user_id?: string; access_token?: string; refresh_token?: string; expires_at?: number; created_at?: string; updated_at?: string }
+        Relationships: []
       }
       user_settings: {
         Row: {
@@ -234,7 +242,7 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_spotify_tokens_table: { Args: Record<string, never>; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -1,36 +1,40 @@
-# QueueBeats router security
+# QueueBeats router release repair
 
-Execution: sec-github-queuebeats-react-router-20261103. Buzz issue 427c0adb508039428297bd7573c1f64b2399244e0f18a3f014b6e35777096bbc. Forge owns build; Pilot verifies. Source thread Mission Control / 802fc78ea5900c648fb99d290d523649e5447a3e022398ed8022f62823832854.
+Execution: sec-github-queuebeats-react-router-20261103, issue 427c0adb508039428297bd7573c1f64b2399244e0f18a3f014b6e35777096bbc. Forge builds; Pilot verifies. Draft PR: https://github.com/Bakke-Co/QueueBeats/pull/3. Nyx expanded scope to baseline repair and live diagnosis in aae0160d7ee597c4af3659d666deb64cab5f8480996d75ffaa156db06294e90c.
 
-## Status
+## Current task list
 
-- [x] Map credential release overlap and preserve the original checkout and finisher.
-- [x] Baseline full frontend checks on main 65e3672bf6297d456f3c125687b1fa9f71e41be9.
-- [x] Pin react-router-dom 7.18.0 and update npm and Yarn locks.
-- [x] Re-run all existing checks: identical TypeScript diagnostics before/after; lint lacks configuration in both; direct Vite production bundle builds.
-- [ ] Browser routing checks and independent Pilot assessment.
-- [ ] Resolve full-check blockers, obtain Pilot PASS on final head, merge and verify production and GitHub alerts.
+- [x] Isolate dependency repair on main after credential PR #2, preserve credential checkout/finisher/watcher.
+- [x] Pin router 7.18.0 and regenerate both frontend lockfiles.
+- [x] Repair full frontend baseline, add regression tests and CI.
+- [x] Diagnose live database failure with hostname, DNS and authenticated API controls.
+- [ ] Final-head checks and Pilot review.
+- [ ] Authorized database recovery, real production workflow, release and fixed-alert verification.
 
-## Decision and map
+## Verified baseline and repair
 
-Chose: current-main isolated dependency branch, preserve both lock formats. Over: modifying credential branch, assuming credential gates cover dependencies, deleting Yarn support. Because: all four live alerts name the two locks and credential PR 2 is already merged. Revisit-if: validation or the credential owner identifies a release conflict.
+Main 65e3672bf6297d456f3c125687b1fa9f71e41be9 had 63 TypeScript errors across 18 files and no lint configuration. Those diagnostics were byte-identical before/after the initial dependency bump. The scoped repair now passes TypeScript, lint and tsc/Vite build, with eight passing regression tests. Git-directory/router-evidence contains baseline, repaired and browser logs. Final-head checks must be repeated after changes. Root package manifests remain unchanged.
 
-RouterProvider consumes router.tsx and generated user-routes.tsx. Flat routes include queue parameters and a terminal wildcard; all pages share the same router package. React 18.2 and Node >=20.18 satisfy v7.18 package requirements. Imports remain through react-router-dom, which still re-exports the v7 APIs. No application code or TypeScript configuration changed. npm install updated both lockfiles; standalone Yarn 1 rejects the pre-existing yarn@4 packageManager declaration. Do not migrate package-manager formats incidentally.
+Repairs cover schema-declared token/position types, duration/URI/vote adapters, Response objects, auth return type, callback arguments, PromiseLike handling, missing import, shared toaster, and generated-client type/dead code. TypeScript checks remain enabled. ESLint recommended is newly configured; TypeScript identifier/unused checks are not duplicated by core JavaScript rules. CI runs frontend lint, tests and build on PRs/main. Existing credentials remain server-side; no SQL/migration changed.
 
-## Baseline blockers and evidence
+Health probes now query actual public UI tables (profiles, queues, songs, votes), using GET limit=0 to return structured errors but no customer rows. HEAD was considered and rejected because it discards PostgREST error bodies. Access denial, connection failure, missing relation and unknown probe error remain distinct. Startup checks never call setup or mutation RPCs. Protected token/settings tables remain the responsibility of their authenticated workflows. Auth initialization tests the configured data service rather than an unrelated API 200. The invalid WebSocket.open monkey patch was removed.
 
-Full tsc/build fail before the upgrade with 63 TypeScript errors across 18 files. Before/after diagnostic logs match byte-for-byte. Diagnostics involve API Response shapes, generated Track types, auth return contracts, queue/song schema fields and other application types. Lint has no ESLint configuration. No frontend test script is declared. Evidence files baseline-{tsc,build,lint}.log and after-{tsc,build,lint,vite}.log are under the isolated worktree Git directory/router-evidence. Complete log and coordination record: /Users/nyx/.buzz/WORK_LOGS/FORGE_QUEUEBEATS_ROUTER_20261103.md. These are release blockers, not accepted exceptions.
+## Live diagnosis, 03.11.2026
 
-Production was measured at ready deploy 6ae623df12b539f2109a9a59, commit 65e3672bf6297d456f3c125687b1fa9f71e41be9. The credential finisher is not running, last exit 1, and remains owned separately. No env, watcher, branch, secret or production changes made.
+Production deploy 6ae623df12b539f2109a9a59 was ready at main 65e3672bf6297d456f3c125687b1fa9f71e41be9. Scanning its 32 JavaScript bundles and reading both Netlify Supabase URL variables yielded thuqfmfgpodaxxvydbcz.supabase.co. That hostname did not resolve while supabase.com did. Authenticated GET /v1/projects/thuqfmfgpodaxxvydbcz returned HTTP 404, Resource has been removed. Authenticated GET /v1/projects returned HTTP 200 with no matching reference/name. Provider backup recoverability remains unknown; no replacement, restore, credentials or customer data changes attempted.
 
-## Next steps
+Ranked causes: unavailable configured database is confirmed at the current endpoint; broken health probing also exists in source and is repaired; frontend/hosting hostname mismatch is ruled out because the actual deployed bundle and both hosting values agree. A green fixture is not recovery evidence.
 
-Finish browser comparison, present final head and baseline failures to Pilot. Keep PR draft and execution row open until full frontend gates are genuinely satisfied. Broader auth/data-contract fixes need an explicit coordinated scope rather than silently bundling them with this dependency update. GitHub alerts 249/250/419/420 require fixed status after merge, not merely a patched local lock.
+## Browser evidence and limits
 
-Still unmapped: authenticated production workflow, current database health, full-check repair ownership. Generated .netlify files, generated user routes and netlify-build.sh outputs are not this change. Revert the dependency commit to roll back without reverting credential PR 2.
+The production bundle with a read-only browser data fixture renders home, navigates to login and its form, handles history back, redirects an anonymous dynamic queue URL to login, and renders the wildcard route. Zero page errors and zero attempted Supabase writes. Simulated DNS failure renders Database Unavailable with a connection message. No authenticated production workflow claimed. Screenshots and exact fixture script remain under Git-directory/router-evidence; no customer form submitted.
 
-## Browser check, 03.11.2026
+## Decision and release boundary
 
-Live production showed Database Setup Required / Failed to check database tables. Continue Anyway rendered the homepage. Local upgraded production bundle showed the same database warning, then Authentication Error because its backend health check could not complete. A browser-only health fixture was attempted, but the browser session disappeared before an inspectable navigation result was captured. No router navigation success or authenticated workflow is claimed. Keep the live-workflow gate open.
+Chose: repair shared contracts and report unavailable database truthfully on the isolated branch, preserving both lock formats. Over: modifying credential branch, disabling checks, hiding database errors behind API 200, or silently provisioning replacement data. Because: Nyx assigned baseline repair, while recovery could involve protected customer data and new infrastructure. Revisit-if: an authorized recoverable database is identified.
 
-The npm resolver reports only react-router-dom 7.18.0 and react-router 7.18.0; npm/Yarn versions, registry URLs and integrity hashes match. No application changes were required to build the bundle.
+Keep PR #3 draft until Pilot reviews final head and the real workflow passes. The separate credential row queuebeats-spotify-secret-public-20261031 retains its owner. Its checkout remained clean at 0c0cdd420ab4923bfd147cd2280b38ae6aceb98c; finisher last measured not running, exit 1, and untouched. Router alerts 249/250/419/420 were still open at last API read. The digest remains open.
+
+Next: Pilot final-head review; Nyx coordinate the database recovery decision with existing owner, then Forge verifies the restored workflow before release. No auto-merge. Reversal is a revert of the repair commit and/or router bump, leaving credential PR #2 intact.
+
+Still unmapped: whether provider support can recover deleted-project data/backups; a replacement database's authorization and schema; authenticated real workflow and final production release. No other repository or customer data was touched. Durable coordination: /Users/nyx/.buzz/WORK_LOGS/FORGE_QUEUEBEATS_ROUTER_20261103.md.

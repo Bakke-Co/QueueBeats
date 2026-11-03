@@ -7,8 +7,8 @@ export async function ensureSpotifyTokensTable() {
     console.log('Checking if spotify_tokens table exists...');
     
     // First try to get an authenticated client
-    const authenticatedClient = await getAuthenticatedSupabaseClient();
-    if (!authenticatedClient) {
+    const { supabase: authenticatedClient, isAuthenticated } = await getAuthenticatedSupabaseClient();
+    if (!isAuthenticated) {
       console.error('Failed to get authenticated Supabase client');
       return {
         success: false,

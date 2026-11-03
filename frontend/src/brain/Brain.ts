@@ -303,7 +303,7 @@ export class Brain<SecurityDataType = unknown> extends HttpClient<SecurityDataTy
    * @secure
    */
   search_songs = (query?: { q?: string; limit?: number }, params: RequestParams = {}) =>
-    this.request<Track[], any>({
+    this.request<SearchSongsData, any>({
       path: `/routes/songs/songs/search`,
       method: "GET",
       query: query,

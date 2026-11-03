@@ -17,7 +17,7 @@ export type AuthContextType = {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any } | undefined>;
   signUp: (email: string, password: string) => Promise<{ error: any, data: any } | undefined>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<boolean>;
   updateProfile: (profile: Partial<Profile>) => Promise<void>;
 };
 

@@ -48,7 +48,7 @@ const getActiveSongs = (songs: SongWithVotes[]) => {
       return a.position - b.position;
     }
     // Finally by created_at
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
   });
 };
 

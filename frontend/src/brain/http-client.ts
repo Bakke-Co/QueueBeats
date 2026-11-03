@@ -274,7 +274,6 @@ export class HttpClient<SecurityDataType = unknown> {
             data = JSON.parse(chunk);
           } catch (error) {
             throw new Error(error);
-            continue;
           }
         } else if (contentType === "application/octet-stream") {
           data = new Uint8Array(value);

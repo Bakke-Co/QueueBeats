@@ -175,7 +175,7 @@ function GuestQueueViewContent() {
           setIsRealTimeActive(true);
           
           // Only handle votes for active user if they're logged in
-          if (user && (newVote?.user_id === user.id || oldVote?.user_id === user.id)) {
+          if (user && (newVote?.profile_id === user.id || oldVote?.profile_id === user.id)) {
             // On vote added or removed, update the user_has_voted property
             setSongs(prev => prev.map(song => {
               if ((newVote && song.id === newVote.song_id) || (oldVote && song.id === oldVote.song_id)) {

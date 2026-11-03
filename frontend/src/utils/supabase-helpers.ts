@@ -1,3 +1,4 @@
+import type { Database } from './database.types';
 import { supabase } from './supabase';
 
 /**
@@ -104,7 +105,7 @@ export const ensureValidSession = async () => {
 /**
  * Store values in Supabase with retry logic
  */
-export const storeInSupabase = async (table: string, data: any, matchCondition: any) => {
+export const storeInSupabase = async (table: keyof Database['public']['Tables'], data: any, matchCondition: any) => {
   const { supabase: authClient, isAuthenticated } = await getAuthenticatedSupabaseClient();
   
   if (!isAuthenticated) {

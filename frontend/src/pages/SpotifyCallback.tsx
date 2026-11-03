@@ -88,12 +88,11 @@ const SpotifyCallback = () => {
           
           // Store the tokens in Supabase
           try {
-            const storeResult = await storeSpotifyTokens(
-              userId, 
-              tokens.access_token, 
-              tokens.refresh_token, 
-              tokens.expires_in
-            );
+            const storeResult = await storeSpotifyTokens({
+              access_token: tokens.access_token,
+              refresh_token: tokens.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + tokens.expires_in
+            });
             
             if (!storeResult) {
               console.error('Failed to store Spotify tokens');
