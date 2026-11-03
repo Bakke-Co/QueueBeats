@@ -191,12 +191,8 @@ export const loadSupabaseConfig = async (): Promise<boolean> => {
   } catch { return false; }
 };
 
-// This function verifies the supplied configuration; it does not change the shared client.
-export const initializeSupabase = async (url: string, key: string): Promise<boolean> => {
-  if (!url || !key) return false;
-  try {
-    const client = createClient<Database>(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
-    const { error } = await client.from('profiles').select('id').limit(0);
-    return !error;
-  } catch { return false; }
+// Validate the deployed client only; switching projects requires coordinated deployment.
+export const validateSupabaseConfig = async (url: string, key: string): Promise<boolean> => {
+  if (url.trim().replace(/\/$/, '') !== supabaseUrl.replace(/\/$/, '') || key.trim() !== supabaseAnonKey) return false;
+  return loadSupabaseConfig();
 };

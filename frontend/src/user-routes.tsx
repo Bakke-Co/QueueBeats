@@ -62,6 +62,7 @@ export const userRoutes: RouteObject[] = [
   { path: "/signup", element: withSuspense(Signup), errorElement: <ErrorBoundary /> },
   { path: "/signup-confirmation", element: withSuspense(SignupConfirmation), errorElement: <ErrorBoundary /> },
   { path: "/signupconfirmation", element: withSuspense(SignupConfirmation), errorElement: <ErrorBoundary /> },
+  { path: "/auth/callback", element: withSuspense(SpotifyCallback), errorElement: <ErrorBoundary /> },
   { path: "/spotify-callback", element: withSuspense(SpotifyCallback), errorElement: <ErrorBoundary /> },
   { path: "/spotifycallback", element: withSuspense(SpotifyCallback), errorElement: <ErrorBoundary /> },
   { path: "/spotify-setup", element: withSuspense(SpotifySetupPage), errorElement: <ErrorBoundary /> },

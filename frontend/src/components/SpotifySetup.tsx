@@ -27,7 +27,7 @@ export function SpotifySetup() {
         return;
       }
       
-      // Try to set up the database
+      // Check storage availability without provisioning schema.
       const result = await ensureSpotifyTokensTable();
       
       if (result.success) {
@@ -78,7 +78,7 @@ export function SpotifySetup() {
             onClick={handleRetry}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
           >
-            Retry Setup
+            Retry Check
           </button>
           <button 
             onClick={() => navigate('/')}
@@ -100,7 +100,7 @@ export function SpotifySetup() {
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-green-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
-        <h3 className="text-xl font-bold text-green-700">Database Setup Complete</h3>
+        <h3 className="text-xl font-bold text-green-700">Spotify Storage Available</h3>
         <p className="text-center my-4 text-green-600">
           The Spotify integration is now ready to use!
         </p>
