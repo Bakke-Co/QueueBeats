@@ -104,9 +104,9 @@ const SpotifyCallback = () => {
             console.log('Successfully stored Spotify tokens');
             setState('success');
             
-            // Navigate back to the queue page
+            // Return to queue selection and Spotify controls.
             setTimeout(() => {
-              navigate('/queue');
+              navigate('/dashboard', { replace: true });
             }, 1000); // Slight delay to show success state
           } catch (storeError) {
             console.error('Error storing Spotify tokens:', storeError);
@@ -138,10 +138,10 @@ const SpotifyCallback = () => {
             <ErrorAlert message={error} />
             <div className="mt-6">
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => navigate('/dashboard', { replace: true })}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Back to Settings
+                Back to Dashboard
               </button>
             </div>
           </div>
