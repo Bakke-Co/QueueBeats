@@ -8,14 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { initializeSupabase } from "../utils/supabase";
+import { validateSupabaseConfig } from "../utils/supabase";
 import brain from "../brain";
 
 export default function Setup() {
   const navigate = useNavigate();
   const [supabaseUrl, setSupabaseUrl] = useState("");
   const [supabaseAnonKey, setSupabaseAnonKey] = useState("");
-  const [isConfigSaved, setIsConfigSaved] = useState(false);
+  const [isConfigVerified, setIsConfigVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -33,13 +33,6 @@ export default function Setup() {
 
   // Save current debug information
   useEffect(() => {
-    // Check localStorage for saved credentials
-    const savedUrl = localStorage.getItem("queuebeats_supabase_url");
-    const savedKey = localStorage.getItem("queuebeats_supabase_anon_key");
-    
-    if (savedUrl) setSupabaseUrl(savedUrl);
-    if (savedKey) setSupabaseAnonKey(savedKey);
-    
     setDebug({
       origin: window.location.origin,
       hostname: window.location.hostname,
@@ -50,15 +43,12 @@ export default function Setup() {
       port: window.location.port,
     });
 
-    // Check if we already have saved config
-    if (savedUrl && savedKey) {
-      setIsConfigSaved(true);
-    }
   }, []);
 
-  // Function to save Supabase configuration manually
-  const saveSupabaseConfig = async () => {
+  // Verify the deployed configuration without changing browser or server credentials.
+  const checkSupabaseConfig = async () => {
     setLoading(true);
+    setIsConfigVerified(false);
     setError(null);
     setSuccess(null);
 
@@ -69,22 +59,17 @@ export default function Setup() {
         return;
       }
 
-      // Save to localStorage for persistent access across refreshes
-      localStorage.setItem("queuebeats_supabase_url", supabaseUrl);
-      localStorage.setItem("queuebeats_supabase_anon_key", supabaseAnonKey);
-
-      // Initialize Supabase with the provided credentials
-      const initialized = await initializeSupabase(supabaseUrl, supabaseAnonKey);
+      const initialized = await validateSupabaseConfig(supabaseUrl, supabaseAnonKey);
       if (!initialized) {
-        throw new Error("Failed to initialize Supabase with provided credentials");
+        throw new Error("Could not verify the deployed configuration. Changing projects requires an administrator to update the deployment.");
       }
 
-      setIsConfigSaved(true);
-      setSuccess("Supabase configuration saved successfully!");
-      toast.success("Supabase connection established!");
+      setIsConfigVerified(true);
+      setSuccess("The deployed database connection is available. Configuration was not changed.");
+      toast.success("Deployed connection verified.");
     } catch (error: any) {
-      console.error("Error saving Supabase config:", error);
-      setError(error.message || "Failed to save Supabase configuration");
+      console.error("Error verifying deployed configuration:", error);
+      setError(error.message || "Failed to verify the deployed configuration");
       toast.error("Failed to connect to Supabase");
     } finally {
       setLoading(false);
@@ -177,7 +162,7 @@ export default function Setup() {
               <CardHeader>
                 <CardTitle>Supabase Configuration</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Enter your Supabase credentials to connect to your database
+                  Verify the deployed database connection. This form does not change configuration.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -234,11 +219,11 @@ export default function Setup() {
                   Back to Home
                 </Button>
                 <Button 
-                  onClick={saveSupabaseConfig} 
+                  onClick={checkSupabaseConfig}
                   disabled={loading}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
-                  {loading ? 'Saving...' : 'Save Configuration'}
+                  {loading ? 'Checking...' : 'Verify Deployed Configuration'}
                 </Button>
               </CardFooter>
             </Card>
@@ -371,14 +356,14 @@ CREATE TABLE IF NOT EXISTS votes (
                     </div>
                     <Button 
                       onClick={setupDatabase} 
-                      disabled={loading || !isConfigSaved}
+                      disabled={loading || !isConfigVerified}
                       className="mt-2 bg-blue-600 hover:bg-blue-700"
                     >
                       {loading ? 'Setting Up...' : 'Setup Database Tables'}
                     </Button>
-                    {!isConfigSaved && (
+                    {!isConfigVerified && (
                       <p className="text-xs text-amber-400 mt-2">
-                        You must save Supabase configuration in the Configuration tab before setting up the database.
+                        You must verify the deployed configuration in the Configuration tab before setting up the database.
                       </p>
                     )}
                   </div>
@@ -392,14 +377,14 @@ CREATE TABLE IF NOT EXISTS votes (
                     </p>
                     <Button 
                       onClick={createTestData} 
-                      disabled={loading || !isConfigSaved}
+                      disabled={loading || !isConfigVerified}
                       className="mt-2 bg-amber-600 hover:bg-amber-700"
                     >
                       {loading ? 'Creating...' : 'Create Test Data'}
                     </Button>
-                    {!isConfigSaved && (
+                    {!isConfigVerified && (
                       <p className="text-xs text-amber-400 mt-2">
-                        You must save Supabase configuration in the Configuration tab before creating test data.
+                        You must verify the deployed configuration in the Configuration tab before creating test data.
                       </p>
                     )}
                   </div>

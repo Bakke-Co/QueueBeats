@@ -3,6 +3,13 @@ import { supabase } from './supabase';
 import { getAuthenticatedSupabaseClient, ensureValidSession, storeInSupabase } from './supabase-helpers';
 import brain from '../brain';
 
+export interface SpotifyTokens {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+}
+
+
 // Constants
 const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_API_BASE = 'https://api.spotify.com/v1';

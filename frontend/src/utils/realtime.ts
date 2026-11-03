@@ -109,10 +109,10 @@ export const subscribeVotesForQueue = (
     
     // Here's a simplified version - in a real app you might need a more robust solution
     // like refreshing the list of song IDs periodically
-    supabase
+    Promise.resolve(supabase
       .from('songs')
       .select('id')
-      .eq('queue_id', queueId)
+      .eq('queue_id', queueId))
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching songs for vote subscription:', error);

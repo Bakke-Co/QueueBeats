@@ -12,20 +12,6 @@ export function Toaster() {
           borderRadius: "8px",
           backdropFilter: "blur(8px)",
         },
-        success: {
-          style: {
-            background: "rgba(0, 0, 0, 0.85)",
-            color: "#fff",
-            border: "1px solid rgba(132, 90, 223, 0.3)",
-          },
-        },
-        error: {
-          style: {
-            background: "rgba(0, 0, 0, 0.85)",
-            color: "#fff",
-            border: "1px solid rgba(255, 99, 99, 0.3)",
-          },
-        },
       }}
     />
   );

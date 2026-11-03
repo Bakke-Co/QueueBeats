@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AppWrapper } from './AppWrapper.tsx'
+import { AppWrapper } from './AppWrapper'
 import './index.css'
 import { ensureDatabaseHealth } from './utils/databaseHealth'
 

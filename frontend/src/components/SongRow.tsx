@@ -4,6 +4,7 @@ import { voteForSong } from "../utils/queueHelpers";
 
 export interface Song {
   id: string;
+  created_at?: string;
   title: string;
   artist: string;
   album?: string;

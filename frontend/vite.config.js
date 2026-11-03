@@ -4,7 +4,17 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), {
+    name: 'reject-unresolved-local-imports',
+    generateBundle(_options, bundle) {
+      for (const output of Object.values(bundle)) {
+        if (output.type !== 'chunk') continue;
+        for (const specifier of [...output.imports, ...output.dynamicImports]) {
+          if (specifier.startsWith('@/')) this.error(`Unresolved local import: ${specifier}`);
+        }
+      }
+    },
+  }],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -14,13 +24,6 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      // Treat missing components as external to avoid build errors for now
-      external: [
-        '@/components/ui/button',
-        '@/components/ui/input',
-        '@/components/ui/card',
-        '@/components/ui/label',
-      ],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],

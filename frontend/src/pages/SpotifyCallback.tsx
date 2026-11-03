@@ -10,7 +10,6 @@ type SpotifyCallbackState = 'loading' | 'connecting' | 'setup' | 'error' | 'succ
 const SpotifyCallback = () => {
   const [error, setError] = useState<string | null>(null);
   const [state, setState] = useState<SpotifyCallbackState>('loading');
-  const [setupMessage, setSetupMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,8 +63,9 @@ const SpotifyCallback = () => {
         
         if (!setupResult.success) {
           console.error('Failed to set up database:', setupResult.message);
-          setSetupMessage(setupResult.message);
-          // Stay in setup state to show setup UI
+          setError(setupResult.message);
+          setState('error');
+          // Stop before exchanging or storing tokens.
           return;
         }
         
@@ -88,12 +88,11 @@ const SpotifyCallback = () => {
           
           // Store the tokens in Supabase
           try {
-            const storeResult = await storeSpotifyTokens(
-              userId, 
-              tokens.access_token, 
-              tokens.refresh_token, 
-              tokens.expires_in
-            );
+            const storeResult = await storeSpotifyTokens({
+              access_token: tokens.access_token,
+              refresh_token: tokens.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + tokens.expires_in
+            });
             
             if (!storeResult) {
               console.error('Failed to store Spotify tokens');
@@ -105,9 +104,9 @@ const SpotifyCallback = () => {
             console.log('Successfully stored Spotify tokens');
             setState('success');
             
-            // Navigate back to the queue page
+            // Return to queue selection and Spotify controls.
             setTimeout(() => {
-              navigate('/queue');
+              navigate('/dashboard', { replace: true });
             }, 1000); // Slight delay to show success state
           } catch (storeError) {
             console.error('Error storing Spotify tokens:', storeError);
@@ -139,10 +138,10 @@ const SpotifyCallback = () => {
             <ErrorAlert message={error} />
             <div className="mt-6">
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => navigate('/dashboard', { replace: true })}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Back to Settings
+                Back to Dashboard
               </button>
             </div>
           </div>
@@ -157,9 +156,9 @@ const SpotifyCallback = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Setting Up Spotify Integration</h2>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Checking Spotify Integration</h2>
             <p className="mt-2 text-sm text-gray-600">
-              {setupMessage || 'Please wait while we set up the Spotify integration...'}
+              Please wait while we check Spotify connection storage.
             </p>
             <div className="mt-6">
               <LoadingIndicator />

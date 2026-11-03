@@ -1,8 +1,9 @@
-import { supabase } from './supabase';
+import { supabase, loadSupabaseConfig } from './supabase';
 import { getAuthenticatedSupabaseClient, ensureValidSession } from './supabase-helpers';
 import type { Database } from './database.types';
+import { songInsert, type SongInput } from './queueContracts';
 
-export type Queue = Database['public']['Tables']['queues']['Row'];
+export type Queue = Omit<Database['public']['Tables']['queues']['Row'], 'settings'> & { settings: Partial<QueueSettings> | null };
 export type Song = Database['public']['Tables']['songs']['Row'];
 export type Vote = Database['public']['Tables']['votes']['Row'];
 
@@ -358,14 +359,7 @@ export const getQueueByAccessCode = async (accessCode: string) => {
 };
 
 // Add a song to a queue
-export const addSongToQueue = async (queueId: string, song: {
-  title: string;
-  artist: string;
-  album?: string;
-  duration?: number;
-  track_uri?: string;
-  cover_url?: string;
-}) => {
+export const addSongToQueue = async (queueId: string, song: SongInput) => {
   try {
     // Attempt to use the backend API first (recommended)
     try {
@@ -384,8 +378,8 @@ export const addSongToQueue = async (queueId: string, song: {
             artist: song.artist,
             album: song.album,
             cover_url: song.cover_url,
-            spotify_uri: song.spotify_uri || null,
-            duration_ms: song.duration_ms || 0
+            spotify_uri: song.spotify_uri ?? song.track_uri ?? null,
+            duration_ms: song.duration_ms ?? song.duration ?? 0
           }
         })
       });
@@ -404,10 +398,10 @@ export const addSongToQueue = async (queueId: string, song: {
     }
 
     // If backend API fails, try Supabase directly
-    const { supabase: authClient, isAuthenticated } = await getAuthenticatedSupabaseClient();
+    const { supabase: authClient, isAuthenticated, userId } = await getAuthenticatedSupabaseClient();
     
-    if (!isAuthenticated) {
-      console.warn('Using unauthenticated Supabase client - this may cause errors');
+    if (!isAuthenticated || !userId) {
+      throw new Error('Authentication required to add a song');
     }
     
     // First check if the queue exists
@@ -426,15 +420,7 @@ export const addSongToQueue = async (queueId: string, song: {
     // Add the song to the songs table
     const { data, error } = await authClient
       .from('songs')
-      .insert({
-        queue_id: queueId,
-        title: song.title,
-        artist: song.artist,
-        album: song.album,
-        cover_url: song.cover_url,
-        spotify_uri: song.spotify_uri || null,
-        duration_ms: song.duration_ms || 0
-      })
+      .insert(songInsert(queueId, song, userId))
       .select()
       .single();
     
@@ -460,14 +446,7 @@ export const addSongToQueue = async (queueId: string, song: {
 };
 
 // Add a song to the mock queue (updates the mock_songs.json file on the backend)
-export const addSongToMockQueue = async (queueId: string, song: {
-  title: string;
-  artist: string;
-  album?: string;
-  duration?: number;
-  track_uri?: string;
-  cover_url?: string;
-}) => {
+export const addSongToMockQueue = async (queueId: string, song: SongInput) => {
   try {
     // Get current user ID if possible
     let userId = null;

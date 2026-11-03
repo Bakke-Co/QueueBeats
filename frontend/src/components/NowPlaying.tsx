@@ -135,7 +135,7 @@ export function NowPlaying({ queueId, onRefresh }: Props) {
           // Reset and start progress
           setProgress(0);
           setProgressMs(0);
-          startProgressTracking(song.duration_ms || 0);
+          startProgressTracking(song.duration || 0);
         }
       } catch (error) {
         console.error("Error fetching current song:", error);
@@ -210,8 +210,8 @@ export function NowPlaying({ queueId, onRefresh }: Props) {
         setProgressMs(0);
       }
 
-      if (!isPlaying && currentSong.duration_ms) {
-        startProgressTracking(currentSong.duration_ms);
+      if (!isPlaying && currentSong.duration) {
+        startProgressTracking(currentSong.duration);
       }
     }
   };
@@ -294,10 +294,10 @@ export function NowPlaying({ queueId, onRefresh }: Props) {
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        {currentSong?.duration_ms && (
+        {currentSong?.duration && (
           <div className="flex justify-between text-xs text-white/60 mt-1">
             <span>{formatTime(progressMs)}</span>
-            <span>{formatTime(currentSong.duration_ms)}</span>
+            <span>{formatTime(currentSong.duration)}</span>
           </div>
         )}
       </div>

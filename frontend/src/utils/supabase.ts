@@ -144,51 +144,6 @@ export const getSupabaseWithAuth = async () => {
   return supabaseWithAuth;
 };
 
-// Setup realtime debug logging
-(function setupRealtimeLogging() {
-  // Only run this once
-  if ((window as any).__realtimeLoggingSetup) return;
-  (window as any).__realtimeLoggingSetup = true;
-  
-  try {
-    console.log('Setting up Supabase realtime debug logging');
-    
-    // Get the current WebSocket prototype open and close methods
-    const originalOpen = WebSocket.prototype.open;
-    const originalClose = WebSocket.prototype.close;
-    
-    // Override the methods to add logging
-    WebSocket.prototype.open = function() {
-      console.log(`WebSocket opening: ${this.url}`);
-      
-      // Add event listeners for connection status
-      this.addEventListener('open', () => {
-        console.log(`WebSocket connected: ${this.url}`);
-      });
-      
-      this.addEventListener('error', (event) => {
-        console.error(`WebSocket error: ${this.url}`, event);
-      });
-      
-      this.addEventListener('close', (event) => {
-        console.log(`WebSocket closed: ${this.url}, clean: ${event.wasClean}, code: ${event.code}, reason: ${event.reason}`);
-      });
-      
-      // Call original method
-      return originalOpen.apply(this, arguments);
-    };
-    
-    WebSocket.prototype.close = function() {
-      console.log(`WebSocket closing: ${this.url}`);
-      return originalClose.apply(this, arguments);
-    };
-    
-    console.log('Supabase realtime debug logging set up successfully');
-  } catch (error) {
-    console.error('Error setting up realtime debug logging:', error);
-  }
-})();
-
 // Helper to get the current user with timeout protection
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
@@ -228,140 +183,16 @@ export const getCurrentUser = async (): Promise<User | null> => {
   }
 };
 
-// Check backend API for health
-const checkBackendApi = async (): Promise<boolean> => {
+// Probe the actual configured data service without loading customer rows.
+export const loadSupabaseConfig = async (): Promise<boolean> => {
   try {
-    // Get the API URL from environment or default to localhost:8001
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
-    console.log('Using API URL:', API_URL);
-    
-    // Attempt to connect to API endpoints in order of preference
-    const endpoints = [
-      `${API_URL}/debug/health`,             // Direct route without prefix
-      `${API_URL}/debug/supabase`            // Direct route without prefix
-    ];
-    
-    for (const endpoint of endpoints) {
-      try {
-        console.log(`Trying API endpoint: ${endpoint}`);
-        const response = await fetch(endpoint, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          mode: 'cors'
-        });
-        
-        console.log(`Endpoint ${endpoint} returned status: ${response.status}`);
-        
-        if (response.status === 200) {
-          const data = await response.json();
-          console.log('API health check succeeded:', data);
-          return true;
-        }
-      } catch (err) {
-        console.warn(`Error connecting to ${endpoint}:`, err);
-      }
-    }
-    
-    // Try a no-cors request as a last resort
-    console.log('Attempting no-cors connection');
-    await fetch(`${API_URL}/debug/health`, {
-      method: 'GET',
-      mode: 'no-cors'
-    });
-    
-    console.log('No-cors request completed without throwing, API might be accessible');
-    return false;
-  } catch (error) {
-    console.error('All API connection attempts failed:', error);
-    return false;
-  }
+    const { error } = await supabase.from('profiles').select('id').limit(0);
+    return !error;
+  } catch { return false; }
 };
 
-// For backward compatibility, maintain the loadSupabaseConfig function
-// but simplify it since we now initialize Supabase at import time
-export const loadSupabaseConfig = async () => {
-  try {
-    console.log('Checking Supabase connection...');
-    
-    // First check if the backend API is available
-    const apiAvailable = await checkBackendApi();
-    
-    // If API is available, we might not need to test Supabase directly
-    if (apiAvailable) {
-      console.log('Backend API is available, not testing Supabase directly');
-      return true;
-    }
-    
-    // Test the connection by making a simple query
-    const { error } = await supabase.from('health_check').select('id').limit(1);
-    
-    if (error) {
-      console.error('Supabase connection failed:', error);
-      return false;
-    }
-    
-    console.log('Supabase connection successful');
-    return true;
-  } catch (error) {
-    console.error('Error testing Supabase connection:', error);
-    return false;
-  }
+// Validate the deployed client only; switching projects requires coordinated deployment.
+export const validateSupabaseConfig = async (url: string, key: string): Promise<boolean> => {
+  if (url.trim().replace(/\/$/, '') !== supabaseUrl.replace(/\/$/, '') || key.trim() !== supabaseAnonKey) return false;
+  return loadSupabaseConfig();
 };
-
-// Initialize Supabase with custom URL and key
-export const initializeSupabase = async (url: string, key: string): Promise<boolean> => {
-  try {
-    console.log('Initializing Supabase with custom parameters...');
-    
-    if (!url || !key) {
-      console.error('Missing Supabase URL or Anon Key');
-      return false;
-    }
-    
-    // We're using pre-initialized client, so just verify connection
-    const { error } = await supabase.from('health_check').select('id').limit(1);
-    
-    if (error) {
-      console.error('Failed to initialize Supabase with custom parameters:', error);
-      return false;
-    }
-    
-    console.log('Supabase initialized successfully with custom parameters');
-    return true;
-  } catch (error) {
-    console.error('Error initializing Supabase with custom parameters:', error);
-    return false;
-  }
-};
-
-// Test the Supabase connection on load
-(async () => {
-  try {
-    console.log('Testing Supabase connection...');
-    const startTime = Date.now();
-    
-    // First check if backend API health check is available
-    const apiAvailable = await checkBackendApi();
-    
-    if (apiAvailable) {
-      console.log('Backend API is available, Supabase status managed by API');
-      return;
-    }
-    
-    // Use a table that exists in our schema instead of 'health_check'
-    const { data, error } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
-    
-    const duration = Date.now() - startTime;
-    
-    if (error) {
-      console.error(`Supabase connection test failed after ${duration}ms:`, error);
-    } else {
-      console.log(`Supabase connection test successful in ${duration}ms`);
-    }
-  } catch (error) {
-    console.error('Supabase connection test exception:', error);
-  }
-})();
