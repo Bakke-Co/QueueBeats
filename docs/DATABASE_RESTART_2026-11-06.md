@@ -29,3 +29,5 @@ Cutover: Netlify `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_URL`, 
 `SUPABASE_SERVICE_ROLE_KEY` still point at the removed project. Those variables belong to the
 credential row `queuebeats-spotify-secret-public-20261031` and must change together with its
 finisher, so the build never mixes configurations.
+
+Rerun: `scripts/check-database-workflow.mjs` (reads the three values on stdin; never pass keys as arguments).
