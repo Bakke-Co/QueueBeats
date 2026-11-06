@@ -30,4 +30,6 @@ Cutover: Netlify `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_URL`, 
 credential row `queuebeats-spotify-secret-public-20261031` and must change together with its
 finisher, so the build never mixes configurations.
 
+Pilot holes closed 06.11.2026 (`20261106070000`): queues are owner-only, lookups go through `get_queue` (code only to the creator) and `get_queue_by_access_code`; `vote_count` is 0..1. Check now 17 workflow steps + 11 denials, all pass.
+
 Rerun: `scripts/check-database-workflow.mjs` (reads the three values on stdin; never pass keys as arguments).
