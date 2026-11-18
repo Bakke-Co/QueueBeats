@@ -241,10 +241,9 @@ export const getQueueById = async (queueId: string) => {
     }
     
     // Use the client with proper auth
+    // queues are owner-only under RLS; get_queue returns any queue by id (code only to its creator).
     const { data, error } = await authClient
-      .from('queues')
-      .select('*')
-      .eq('id', queueId)
+      .rpc('get_queue', { p_id: queueId })
       .single();
     
     if (error) {
@@ -343,10 +342,7 @@ export const hasUserVotedForSong = async (songId: string, userId: string) => {
 export const getQueueByAccessCode = async (accessCode: string) => {
   try {
     const { data, error } = await supabase
-      .from('queues')
-      .select('*')
-      .eq('access_code', accessCode)
-      .eq('active', true)
+      .rpc('get_queue_by_access_code', { p_code: accessCode })
       .single();
     
     if (error) throw error;
@@ -412,9 +408,7 @@ export const addSongToQueue = async (queueId: string, song: {
     
     // First check if the queue exists
     const { data: queueData, error: queueError } = await authClient
-      .from('queues')
-      .select('id')
-      .eq('id', queueId)
+      .rpc('get_queue', { p_id: queueId })
       .single();
     
     if (queueError || !queueData) {

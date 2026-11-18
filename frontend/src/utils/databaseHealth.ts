@@ -126,7 +126,7 @@ async function checkDatabaseHealthViaRPC(): Promise<HealthCheckResult> {
       return await manualDatabaseCheck(client);
     }
     
-    return data as HealthCheckResult;
+    return data as unknown as HealthCheckResult;
   } catch (error) {
     console.error('Error in direct database health check:', error);
     

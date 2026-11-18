@@ -234,7 +234,9 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_queue: { Args: { p_id: string }; Returns: Database['public']['Tables']['queues']['Row'][] }
+      get_queue_by_access_code: { Args: { p_code: string }; Returns: Database['public']['Tables']['queues']['Row'][] }
+      queue_accepts_songs: { Args: { p_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
