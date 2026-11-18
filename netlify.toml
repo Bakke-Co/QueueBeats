@@ -85,3 +85,11 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Not launched: keep the whole host out of search indexes until it is.
+# queuebeats.netlify.app served a blank "Databutton" shell answering 200 on
+# every path (SEO audit 74d88b17 row 24, 18.11.2026). Remove at launch.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
