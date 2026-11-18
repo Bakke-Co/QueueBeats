@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://queuebeats.netlify.app/sitemap.xml
